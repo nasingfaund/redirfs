@@ -41,7 +41,7 @@
 /*---------------------------------------------------------------------------*/
 
 struct rfs_radix_tree   rfs_inode_radix_tree = {
-    .root = RADIX_TREE_INIT(GFP_ATOMIC),
+    .root = RADIX_TREE_INIT(GFP_ATOMIC, XA_FLAGS_ALLOC),
     .lock = __SPIN_LOCK_INITIALIZER(rfs_inode_radix_tree.lock),
     .rfs_type = RFS_TYPE_RINODE,
     };
@@ -1710,7 +1710,7 @@ skip:
 #endif //(LINUX_VERSION_CODE < KERNEL_VERSION(3,17,0))
 
 #if (LINUX_VERSION_CODE > KERNEL_VERSION(3,5,0))
-int rfs_atomic_open(struct inode *inode, struct dentry *dentry, struct file *file, unsigned open_flag, umode_t create_mode, int *opened)
+int rfs_atomic_open(struct inode *inode, struct dentry *dentry, struct file *file, unsigned open_flag, umode_t create_mode)
 {
     struct rfs_inode *rinode;
     struct rfs_info *rinfo;
@@ -1727,7 +1727,7 @@ int rfs_atomic_open(struct inode *inode, struct dentry *dentry, struct file *fil
     rargs.args.i_atomic_open.file = file;
     rargs.args.i_atomic_open.open_flag = open_flag;
     rargs.args.i_atomic_open.create_mode = create_mode;
-    rargs.args.i_atomic_open.opened = opened;
+    rargs.args.i_atomic_open.opened = 0;
     rargs.rv.rv_int = -ENOSYS;
 
     if (!RFS_IS_IOP_SET(rinode, rargs.type.id) ||
@@ -1738,8 +1738,7 @@ int rfs_atomic_open(struct inode *inode, struct dentry *dentry, struct file *fil
 	    rargs.args.i_atomic_open.dentry,
 	    rargs.args.i_atomic_open.file,
 	    rargs.args.i_atomic_open.open_flag,
-	    rargs.args.i_atomic_open.create_mode,
-	    rargs.args.i_atomic_open.opened);
+	    rargs.args.i_atomic_open.create_mode);
     } else {
         rargs.rv.rv_int = -EACCES;
     }

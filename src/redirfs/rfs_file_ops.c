@@ -1196,7 +1196,7 @@ ssize_t rfs_copy_file_range(struct file *file_in, loff_t pos_in,
 
 /*---------------------------------------------------------------------------*/
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,5,0))
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,5,0)) && (LINUX_VERSION_CODE < KERNEL_VERSION(4,20,0))
 int rfs_clone_file_range(struct file *src_file, loff_t src_off,
         struct file *dst_file, loff_t dst_off, u64 count)
 {
@@ -1244,7 +1244,7 @@ int rfs_clone_file_range(struct file *src_file, loff_t src_off,
 
 /*---------------------------------------------------------------------------*/
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,5,0))
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,5,0)) && (LINUX_VERSION_CODE < KERNEL_VERSION(4,20,0))
 ssize_t rfs_dedupe_file_range(struct file *src_file, u64 loff,
                     u64 len, struct file *dst_file, u64 dst_loff)
 {
