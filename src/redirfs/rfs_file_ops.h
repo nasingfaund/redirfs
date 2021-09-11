@@ -61,8 +61,15 @@
 #endif
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,5,0))
     #define FUNCTION_FOP_copy_file_range PROTOTYPE_FOP(copy_file_range, rfs_copy_file_range)
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(4,20,0))
     #define FUNCTION_FOP_clone_file_range PROTOTYPE_FOP(clone_file_range, rfs_clone_file_range)
     #define FUNCTION_FOP_dedupe_file_range PROTOTYPE_FOP(dedupe_file_range, rfs_dedupe_file_range)
+#else
+    #define FUNCTION_FOP_remap_file_range PROTOTYPE_FOP(remap_file_range, rfs_remap_file_range)
+    #define FUNCTION_FOP_fadvise PROTOTYPE_FOP(fadvise, rfs_fadvise)
+    #define FUNCTION_FOP_clone_file_range
+    #define FUNCTION_FOP_dedupe_file_range
+#endif
 #else
     #define FUNCTION_FOP_copy_file_range
     #define FUNCTION_FOP_clone_file_range
