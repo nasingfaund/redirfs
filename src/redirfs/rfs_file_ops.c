@@ -1242,6 +1242,98 @@ int rfs_clone_file_range(struct file *src_file, loff_t src_off,
 }
 #endif
 
+/*--- 4.20 ---*/
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,20,0))
+loff_t rfs_remap_file_range(struct file *file_in, loff_t pos_in,
+	   struct file *file_out, loff_t pos_out,
+	   loff_t len, unsigned int remap_flags)
+{
+    struct rfs_file *rfile;
+    struct rfs_info *rinfo;
+    struct rfs_context rcont;
+    RFS_DEFINE_REDIRFS_ARGS(rargs);
+
+    rfile = rfs_file_find(file_in);
+    if (!rfile)
+        rfile = rfs_file_find_with_open_flts(file_out);
+    if (IS_ERR(rfile))
+        return PTR_ERR(rfile);
+    rinfo = rfs_dentry_get_rinfo(rfile->rdentry);
+    rfs_context_init(&rcont, 0);
+
+    rargs.type.id = rfs_inode_to_idc(file_in->f_inode, RFS_OP_f_remap_file_range);
+    rargs.args.f_remap_file_range.file_in = file_in;
+    rargs.args.f_remap_file_range.pos_in = pos_in;
+    rargs.args.f_remap_file_range.file_out = file_out;
+    rargs.args.f_remap_file_range.pos_out = pos_out;
+    rargs.args.f_remap_file_range.len = len;
+    rargs.args.f_remap_file_range.remap_flags = remap_flags;
+    rargs.rv.rv_loff = -EIO;
+
+    if (!RFS_IS_FOP_SET(rfile, rargs.type.id) ||
+        !rfs_precall_flts(rinfo->rchain, &rcont, &rargs)) {
+        if (rfile->op_old && rfile->op_old->remap_file_range) 
+            rargs.rv.rv_loff = rfile->op_old->remap_file_range(
+                    rargs.args.f_remap_file_range.file_in,
+                    rargs.args.f_remap_file_range.pos_in,
+                    rargs.args.f_remap_file_range.file_out,
+                    rargs.args.f_remap_file_range.pos_out,
+                    rargs.args.f_remap_file_range.len,
+                    rargs.args.f_remap_file_range.remap_flags);
+    }
+
+    if (RFS_IS_FOP_SET(rfile, rargs.type.id))
+        rfs_postcall_flts(rinfo->rchain, &rcont, &rargs);
+        
+    rfs_context_deinit(&rcont);
+
+    rfs_file_put(rfile);
+    rfs_info_put(rinfo);
+    return rargs.rv.rv_loff;
+}
+
+int rfs_fadvise(struct file *file_in, loff_t offset, loff_t len, int advice)
+{
+    struct rfs_file *rfile;
+    struct rfs_info *rinfo;
+    struct rfs_context rcont;
+    RFS_DEFINE_REDIRFS_ARGS(rargs);
+
+    rfile = rfs_file_find_with_open_flts(file_in);
+    if (IS_ERR(rfile))
+        return PTR_ERR(rfile);
+    rinfo = rfs_dentry_get_rinfo(rfile->rdentry);
+    rfs_context_init(&rcont, 0);
+
+    rargs.type.id = rfs_inode_to_idc(file_in->f_inode, RFS_OP_f_fadvise);
+    rargs.args.f_fadvise.file_in = file_in;
+    rargs.args.f_fadvise.offset = offset;
+    rargs.args.f_fadvise.len = len;
+    rargs.args.f_fadvise.advice = advice;
+    rargs.rv.rv_int = -EIO;
+
+    if (!RFS_IS_FOP_SET(rfile, rargs.type.id) ||
+        !rfs_precall_flts(rinfo->rchain, &rcont, &rargs)) {
+        if (rfile->op_old && rfile->op_old->fadvise) 
+            rargs.rv.rv_int = rfile->op_old->fadvise(
+                    rargs.args.f_fadvise.file_in,
+                    rargs.args.f_fadvise.offset,
+                    rargs.args.f_fadvise.len,
+                    rargs.args.f_fadvise.advice);
+    }
+
+    if (RFS_IS_FOP_SET(rfile, rargs.type.id))
+        rfs_postcall_flts(rinfo->rchain, &rcont, &rargs);
+        
+    rfs_context_deinit(&rcont);
+
+    rfs_file_put(rfile);
+    rfs_info_put(rinfo);
+    return rargs.rv.rv_int;
+}
+
+#endif
+
 /*---------------------------------------------------------------------------*/
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,5,0)) && (LINUX_VERSION_CODE < KERNEL_VERSION(4,20,0))

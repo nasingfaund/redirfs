@@ -98,6 +98,7 @@
  */
 #endif
 
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(4,20,0))
 #define SET_FOP_REG \
     FUNCTION_FOP_read \
     FUNCTION_FOP_write \
@@ -124,11 +125,42 @@
     FUNCTION_FOP_clone_file_range \
     FUNCTION_FOP_dedupe_file_range \
 
+#else
+
+#define SET_FOP_REG \
+    FUNCTION_FOP_read \
+    FUNCTION_FOP_write \
+    FUNCTION_FOP_llseek \
+    FUNCTION_FOP_read_iter \
+    FUNCTION_FOP_write_iter \
+    FUNCTION_FOP_poll \
+    FUNCTION_FOP_unlocked_ioctl \
+    FUNCTION_FOP_compat_ioctl \
+    FUNCTION_FOP_mmap \
+    FUNCTION_FOP_flush \
+    FUNCTION_FOP_fsync \
+    FUNCTION_FOP_fasync \
+    FUNCTION_FOP_lock \
+    FUNCTION_FOP_sendpage \
+    FUNCTION_FOP_get_unmapped_area \
+    FUNCTION_FOP_flock \
+    FUNCTION_FOP_splice_write \
+    FUNCTION_FOP_splice_read \
+    FUNCTION_FOP_setlease \
+    FUNCTION_FOP_fallocate \
+    FUNCTION_FOP_show_fdinfo \
+    FUNCTION_FOP_copy_file_range \
+    FUNCTION_FOP_remap_file_range \
+    FUNCTION_FOP_fadvise \
+
+#endif
+
 #define SET_FOP_DIR \
     FUNCTION_FOP_readdir \
     FUNCTION_FOP_iterate \
     FUNCTION_FOP_iterate_shared \
 
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(4,20,0))
 #define SET_FOP_CHR \
     FUNCTION_FOP_read \
     FUNCTION_FOP_write \
@@ -154,6 +186,35 @@
     FUNCTION_FOP_copy_file_range \
     FUNCTION_FOP_clone_file_range \
     FUNCTION_FOP_dedupe_file_range \
+
+#else
+#define SET_FOP_CHR \
+    FUNCTION_FOP_read \
+    FUNCTION_FOP_write \
+    FUNCTION_FOP_llseek \
+    FUNCTION_FOP_read_iter \
+    FUNCTION_FOP_write_iter \
+    FUNCTION_FOP_poll \
+    FUNCTION_FOP_unlocked_ioctl \
+    FUNCTION_FOP_compat_ioctl \
+    FUNCTION_FOP_mmap \
+    FUNCTION_FOP_flush \
+    FUNCTION_FOP_fsync \
+    FUNCTION_FOP_fasync \
+    FUNCTION_FOP_lock \
+    FUNCTION_FOP_sendpage \
+    FUNCTION_FOP_get_unmapped_area \
+    FUNCTION_FOP_flock \
+    FUNCTION_FOP_splice_write \
+    FUNCTION_FOP_splice_read \
+    FUNCTION_FOP_setlease \
+    FUNCTION_FOP_fallocate \
+    FUNCTION_FOP_show_fdinfo \
+    FUNCTION_FOP_copy_file_range \
+    FUNCTION_FOP_remap_file_range \
+    FUNCTION_FOP_fadvise \
+
+#endif
 
 loff_t rfs_llseek(struct file *file,
                   loff_t offset,
@@ -286,6 +347,15 @@ ssize_t rfs_dedupe_file_range(struct file *src_file,
                               u64 len,
                               struct file *dst_file,
                               u64 dst_loff);
+
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4, 20, 0))
+// since 4.20
+loff_t rfs_remap_file_range(struct file *file_in, loff_t pos_in,
+	   struct file *file_out, loff_t pos_out,
+	   loff_t len, unsigned int remap_flags);
+
+int rfs_fadvise(struct file *, loff_t, loff_t, int);
+#endif
 
 int rfs_release(struct inode *inode, struct file *file);
 

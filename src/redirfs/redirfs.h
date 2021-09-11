@@ -152,6 +152,8 @@ enum rfs_op_id {
     RFS_OP_f_copy_file_range,
     RFS_OP_f_clone_file_range,
     RFS_OP_f_dedupe_file_range,
+    RFS_OP_f_remap_file_range,
+    RFS_OP_f_fadvise,
     RFS_OP_f_end, /* end of the range */
 
     // address_space
@@ -825,6 +827,22 @@ union redirfs_op_args {
         struct file *dst_file;
         u64 dst_loff;
     } f_dedupe_file_range;
+
+    struct {
+      struct file *file_in;
+      loff_t pos_in;
+      struct file *file_out;
+      loff_t pos_out;
+      loff_t len;
+      unsigned int remap_flags;
+    } f_remap_file_range;
+
+    struct {
+      struct file *file_in;
+      loff_t offset;
+      loff_t len;
+      int advice;
+    } f_fadvise;
 
     /*
     struct {
