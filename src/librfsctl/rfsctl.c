@@ -104,20 +104,20 @@ static void rfsctl_free_filter(struct rfsctl_filter *flt)
 static char *rfsctl_alloc_filename(const char *fltname, const char *filename)
 {
     char *fn;
-    int size;
-
-    size = strlen(rfsctl_dir) + strlen(fltname) + strlen(filename);
-    size += 3; /* / + / + \0 */
+    int rfsctl_dir_len = strlen(rfsctl_dir);
+    int fltname_len = strlen(fltname);
+    int filename_len = strlen(filename);
+    int size = 3 + rfsctl_dir_len + fltname_len + filename_len; /* 3 bcs of / + / + \0 */
 
     fn = malloc(sizeof(char) * size);
     if (!fn)
         return NULL;
 
-    strncpy(fn, rfsctl_dir, strlen(rfsctl_dir) + 1);
-    strncat(fn, "/", 1);
-    strncat(fn, fltname, strlen(fltname));
-    strncat(fn, "/", 1);
-    strncat(fn, filename, strlen(filename));
+    strncpy(fn, rfsctl_dir, rfsctl_dir_len + 1);
+    strcat(fn, "/");
+    strncat(fn, fltname, fltname_len);
+    strcat(fn, "/");
+    strncat(fn, filename, filename_len);
 
     return fn;
 }
